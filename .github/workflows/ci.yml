@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    name: Lint, typecheck & unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  integration:
+    name: Integration tests (demo.flexibee.eu)
+    runs-on: ubuntu-latest
+    # Non-blocking: the public demo may be unreachable or rate-limited.
+    continue-on-error: true
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run integration tests against the demo (read + dry-run writes)
+        env:
+          FLEXIBEE_URL: https://demo.flexibee.eu
+          FLEXIBEE_COMPANY: demo
+          FLEXIBEE_USER: winstrom
+          FLEXIBEE_PASSWORD: winstrom
+        run: npm run test:integration
