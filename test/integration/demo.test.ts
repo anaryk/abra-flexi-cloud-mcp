@@ -86,11 +86,18 @@ describe("ABRA Flexi demo — reads", () => {
     expect(result[0].kod).toBe(first.kod);
   });
 
-  maybe("lists evidence types (all agendas) from the demo", async () => {
-    const result = await ops.evidenceList(client);
-    // The endpoint returns an object describing available evidences.
-    expect(result).toBeTruthy();
-    expect(typeof result).toBe("object");
+  maybe("discovers ALL agendas from the demo via evidence-list", async () => {
+    const result = (await ops.evidenceList(client)) as {
+      evidences?: { evidence?: Array<{ evidencePath?: string }> };
+    };
+    const evidences = result.evidences?.evidence ?? [];
+    const paths = evidences.map((e) => e.evidencePath).filter(Boolean);
+
+    // The demo exposes the full ABRA Flexi agenda set — a couple hundred.
+    expect(paths.length).toBeGreaterThan(100);
+    // The agenda names are technical paths usable directly with the tools.
+    expect(paths).toContain("faktura-vydana");
+    expect(paths).toContain("adresar");
   });
 
   maybe("list tool returns real data via the handler", async () => {
