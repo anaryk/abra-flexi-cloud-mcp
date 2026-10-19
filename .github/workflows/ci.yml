@@ -9,7 +9,7 @@ on:
 jobs:
   build-test:
     name: Lint, typecheck & unit tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, proxmox]
     strategy:
       matrix:
         node-version: [18, 20, 22]
@@ -27,7 +27,7 @@ jobs:
 
   integration:
     name: Integration tests (demo.flexibee.eu)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, proxmox]
     # Non-blocking: the public demo may be unreachable or rate-limited.
     continue-on-error: true
     needs: build-test
